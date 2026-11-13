@@ -17,3 +17,7 @@ textarea { width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; }
 .cifra { font-family:ui-monospace,Menlo,Consolas,monospace; white-space:pre; overflow:auto; margin:0 0 80px; line-height:1.35; }
 .controls { position:fixed; left:0; right:0; bottom:0; display:flex; gap:6px; flex-wrap:wrap; justify-content:center; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); background:#0c0c0c; border-top:1px solid var(--line); }
 .controls button { min-width:44px; }
+.grow { flex: 1; }
+.handle { touch-action: none; }
+select { font: inherit; color: inherit; background: #1c1c1c; border: 1px solid var(--line); border-radius: 8px; padding: 10px; min-height: 44px; flex: 1; }
+button:disabled { opacity: .4; cursor: default; }

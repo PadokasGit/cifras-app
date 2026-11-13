@@ -12,9 +12,19 @@ interface Props {
   onPrev?: () => void
   onNext?: () => void
   position?: string
+  prevDisabled?: boolean
+  nextDisabled?: boolean
 }
 
-export default function SongView({ songId, onBack, onPrev, onNext, position }: Props) {
+export default function SongView({
+  songId,
+  onBack,
+  onPrev,
+  onNext,
+  position,
+  prevDisabled,
+  nextDisabled,
+}: Props) {
   const [song, setSong] = useState<Song | null | undefined>(undefined)
 
   useEffect(() => {
@@ -92,7 +102,11 @@ export default function SongView({ songId, onBack, onPrev, onNext, position }: P
       </pre>
 
       <footer className="controls">
-        {onPrev && <button onClick={onPrev}>Anterior</button>}
+        {onPrev && (
+          <button disabled={prevDisabled} onClick={onPrev}>
+            Anterior
+          </button>
+        )}
         <button aria-label="Descer tom" onClick={() => change({ semitones: normalizeSemitones(song.semitones - 1) })}>
           Tom −
         </button>
@@ -114,7 +128,11 @@ export default function SongView({ songId, onBack, onPrev, onNext, position }: P
         <button aria-label="Tela cheia" className="ghost" onClick={toggleFullscreen}>
           ⛶
         </button>
-        {onNext && <button onClick={onNext}>Próxima</button>}
+        {onNext && (
+          <button disabled={nextDisabled} onClick={onNext}>
+            Próxima
+          </button>
+        )}
       </footer>
     </div>
   )
