@@ -106,3 +106,15 @@ describe('semitonesBetween / normalizeSemitones', () => {
     expect(normalizeSemitones(-13)).toBe(11)
   })
 })
+
+describe('extensões com barra dentro do parêntese', () => {
+  test('transpõe A7(4/9) e E7(b9/13) sem mexer na extensão', () => {
+    expect(transposeChord('A7(4/9)', 2, 'sharp')).toBe('B7(4/9)')
+    expect(transposeChord('E7(b9/13)', 1, 'sharp')).toBe('F7(b9/13)')
+    expect(transposeChord('D7(4/9)/F#', 2, 'sharp')).toBe('E7(4/9)/G#')
+  })
+  test('a linha inteira continua sendo de acordes e é transposta', () => {
+    expect(isChordLine('D  A7(4/9)  G')).toBe(true)
+    expect(transposeText('D  A7(4/9)  G', 2, 'sharp')).toBe('E  B7(4/9)  A')
+  })
+})

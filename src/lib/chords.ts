@@ -6,7 +6,7 @@ const FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
 
 // raiz + sufixo (só construções conhecidas, para não confundir palavras com acordes) + baixo opcional
-const SUFFIX = '(?:maj|min|dim|aug|sus|add|m|M|\\+|°|ø|-|\\d|\\(|\\)|#|b|,)*'
+const SUFFIX = '(?:maj|min|dim|aug|sus|add|m|M|\\+|°|ø|-|\\d|#|b|,|\\([^)\\s]*\\))*'
 const CHORD_RE = new RegExp(`^([A-G][#b]?)(${SUFFIX})(?:/([A-G][#b]?|\\d+))?$`)
 
 // tokens que podem aparecer em linhas de acordes sem serem acordes
