@@ -1,6 +1,23 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { syncNow } from '../lib/sync'
+import { syncNow, type SyncResult } from '../lib/sync'
+
+export function describeSync(r: SyncResult): string {
+  switch (r.status) {
+    case 'ok':
+      return `Sincronizado: ${r.uploaded} enviadas, ${r.downloaded} recebidas.`
+    case 'owner-mismatch':
+      return 'Este aparelho já está ligado a outra conta. Sincronização bloqueada para não misturar dados.'
+    case 'offline':
+      return 'Sem internet. Tudo continua funcionando; sincronize quando voltar.'
+    case 'signed-out':
+      return 'Entre na conta para sincronizar.'
+    case 'not-configured':
+      return 'Sincronização não configurada.'
+    default:
+      return 'A sincronização falhou. Seus dados locais estão intactos; tente de novo.'
+  }
+}
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -28,8 +45,7 @@ export default function Login() {
     if (error) return setMsg('Não foi possível entrar. Confira e-mail e senha.')
     setSignedIn(true)
     setMsg('')
-    const r = await syncNow()
-    setMsg(`Sincronizado: ${r.uploaded} enviadas, ${r.downloaded} recebidas.`)
+    setMsg(describeSync(await syncNow()))
   }
 
   if (signedIn) {
@@ -37,8 +53,7 @@ export default function Login() {
       <div className="dialog">
         <button
           onClick={async () => {
-            const r = await syncNow()
-            setMsg(`Sincronizado: ${r.uploaded} enviadas, ${r.downloaded} recebidas.`)
+            setMsg(describeSync(await syncNow()))
           }}
         >
           Sincronizar agora

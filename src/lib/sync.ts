@@ -22,8 +22,9 @@ export function mergeRecords<T extends { id: string; updatedAt: number }>(
 
 /* ---------- mapeamento para as colunas do Postgres (snake_case) ---------- */
 
-export function songToRow(s: Song) {
+export function songToRow(s: Song, userId?: string) {
   return {
+    ...(userId ? { user_id: userId } : {}),
     id: s.id,
     title: s.title,
     artist: s.artist,
@@ -57,8 +58,9 @@ export function rowToSong(r: ReturnType<typeof songToRow>): Song {
   return song
 }
 
-export function setlistToRow(l: Setlist) {
+export function setlistToRow(l: Setlist, userId?: string) {
   return {
+    ...(userId ? { user_id: userId } : {}),
     id: l.id,
     name: l.name,
     song_ids: l.songIds,
@@ -73,16 +75,68 @@ export function rowToSetlist(r: ReturnType<typeof setlistToRow>): Setlist {
   return l
 }
 
-/** Envia e puxa mudanças. Sem configuração, sem login ou sem internet: não faz nada e não lança. */
-export async function syncNow(): Promise<{ uploaded: number; downloaded: number }> {
-  const none = { uploaded: 0, downloaded: 0 }
-  if (!supabase || (typeof navigator !== 'undefined' && navigator.onLine === false)) return none
+/* ---------- dono dos dados locais ---------- */
+
+const OWNER_KEY = 'syncOwnerId'
+
+export function checkOwner(stored: string | null, sessionUserId: string): 'claim' | 'same' | 'different' {
+  if (stored === null) return 'claim'
+  return stored === sessionUserId ? 'same' : 'different'
+}
+
+function readOwner(): string | null {
+  try {
+    return localStorage.getItem(OWNER_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeOwner(id: string) {
+  try {
+    localStorage.setItem(OWNER_KEY, id)
+  } catch {
+    /* sem armazenamento: segue sem registrar */
+  }
+}
+
+export type SyncStatus =
+  | 'ok'
+  | 'not-configured'
+  | 'signed-out'
+  | 'offline'
+  | 'owner-mismatch'
+  | 'error'
+
+export interface SyncResult {
+  status: SyncStatus
+  uploaded: number
+  downloaded: number
+  error?: string
+}
+
+const result = (status: SyncStatus, extra: Partial<SyncResult> = {}): SyncResult => ({
+  status,
+  uploaded: 0,
+  downloaded: 0,
+  ...extra,
+})
+
+/**
+ * Envia e puxa mudanças. Nunca lança; o status diz o que aconteceu.
+ * Os dados locais ficam ligados à primeira conta que sincronizou: outra conta no mesmo
+ * aparelho é bloqueada (owner-mismatch) em vez de receber ou enviar dados alheios.
+ */
+export async function syncNow(): Promise<SyncResult> {
+  if (!supabase) return result('not-configured')
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return result('offline')
   try {
     const { data: auth } = await supabase.auth.getSession()
-    if (!auth.session) return none
+    const userId = auth.session?.user.id
+    if (!userId) return result('signed-out')
 
-    let uploaded = 0
-    let downloaded = 0
+    const owner = checkOwner(readOwner(), userId)
+    if (owner === 'different') return result('owner-mismatch')
 
     const [remoteSongs, remoteLists] = await Promise.all([
       supabase.from('songs').select('*'),
@@ -91,30 +145,26 @@ export async function syncNow(): Promise<{ uploaded: number; downloaded: number 
     if (remoteSongs.error) throw remoteSongs.error
     if (remoteLists.error) throw remoteLists.error
 
-    const songs = mergeRecords(
-      await db.songs.toArray(),
-      (remoteSongs.data ?? []).map(rowToSong),
-    )
-    const lists = mergeRecords(
-      await db.setlists.toArray(),
-      (remoteLists.data ?? []).map(rowToSetlist),
-    )
+    const songs = mergeRecords(await db.songs.toArray(), (remoteSongs.data ?? []).map(rowToSong))
+    const lists = mergeRecords(await db.setlists.toArray(), (remoteLists.data ?? []).map(rowToSetlist))
 
     if (songs.toUpload.length) {
-      const { error } = await supabase.from('songs').upsert(songs.toUpload.map(songToRow))
+      const { error } = await supabase.from('songs').upsert(songs.toUpload.map((x) => songToRow(x, userId)))
       if (error) throw error
     }
     if (lists.toUpload.length) {
-      const { error } = await supabase.from('setlists').upsert(lists.toUpload.map(setlistToRow))
+      const { error } = await supabase.from('setlists').upsert(lists.toUpload.map((x) => setlistToRow(x, userId)))
       if (error) throw error
     }
     if (songs.toSaveLocal.length) await db.songs.bulkPut(songs.toSaveLocal)
     if (lists.toSaveLocal.length) await db.setlists.bulkPut(lists.toSaveLocal)
 
-    uploaded = songs.toUpload.length + lists.toUpload.length
-    downloaded = songs.toSaveLocal.length + lists.toSaveLocal.length
-    return { uploaded, downloaded }
-  } catch {
-    return none
+    if (owner === 'claim') writeOwner(userId)
+    return result('ok', {
+      uploaded: songs.toUpload.length + lists.toUpload.length,
+      downloaded: songs.toSaveLocal.length + lists.toSaveLocal.length,
+    })
+  } catch (e) {
+    return result('error', { error: e instanceof Error ? e.message : String(e) })
   }
 }

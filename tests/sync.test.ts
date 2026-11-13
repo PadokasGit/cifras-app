@@ -56,3 +56,29 @@ describe('mapeamento linha <-> registro', () => {
     expect(rowToSetlist(setlistToRow(l))).toEqual(l)
   })
 })
+
+import { checkOwner, syncNow } from '../src/lib/sync'
+
+describe('dono dos dados locais', () => {
+  test('primeiro uso reivindica; mesmo usuário passa; outro é bloqueado', () => {
+    expect(checkOwner(null, 'u1')).toBe('claim')
+    expect(checkOwner('u1', 'u1')).toBe('same')
+    expect(checkOwner('u1', 'u2')).toBe('different')
+  })
+  test('user_id explícito só quando informado', () => {
+    const s: Song = {
+      id: 's', title: 'T', artist: '', originalKey: '', rawText: '', semitones: 0, fontSize: 20,
+      accidental: 'sharp', source: { kind: 'paste' }, createdAt: 1, updatedAt: 1,
+    }
+    expect(songToRow(s, 'u1').user_id).toBe('u1')
+    expect('user_id' in songToRow(s)).toBe(false)
+    const l: Setlist = { id: 'l', name: 'N', songIds: [], updatedAt: 1 }
+    expect(setlistToRow(l, 'u1').user_id).toBe('u1')
+  })
+})
+
+describe('syncNow', () => {
+  test('sem Supabase configurado devolve status not-configured', async () => {
+    expect(await syncNow()).toEqual({ status: 'not-configured', uploaded: 0, downloaded: 0 })
+  })
+})
