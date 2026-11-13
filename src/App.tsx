@@ -1,17 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Library from './ui/Library'
 import SongView from './ui/SongView'
 import Setlists from './ui/Setlists'
 import SetlistPlayer from './ui/SetlistPlayer'
+import Login from './ui/Login'
+import { syncNow } from './lib/sync'
 
 type Screen =
   | { name: 'library' }
   | { name: 'song'; id: string }
   | { name: 'setlists' }
   | { name: 'player'; id: string }
+  | { name: 'account' }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'library' })
+
+  // sincroniza ao abrir e ao voltar o foco; sem login/internet não faz nada
+  useEffect(() => {
+    void syncNow()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void syncNow()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   if (screen.name === 'song') {
     return (
@@ -28,29 +41,23 @@ export default function App() {
     )
   }
 
+  const tab = (name: 'library' | 'setlists' | 'account', label: string) => (
+    <button className={screen.name === name ? '' : 'ghost'} onClick={() => setScreen({ name } as Screen)}>
+      {label}
+    </button>
+  )
+
   return (
     <main>
       <h1>Cifras</h1>
       <nav className="row">
-        <button
-          className={screen.name === 'library' ? '' : 'ghost'}
-          onClick={() => setScreen({ name: 'library' })}
-        >
-          Biblioteca
-        </button>
-        <button
-          className={screen.name === 'setlists' ? '' : 'ghost'}
-          onClick={() => setScreen({ name: 'setlists' })}
-        >
-          Repertórios
-        </button>
+        {tab('library', 'Biblioteca')}
+        {tab('setlists', 'Repertórios')}
+        {tab('account', 'Conta')}
       </nav>
-      {screen.name === 'library' && (
-        <Library onOpen={(id) => setScreen({ name: 'song', id })} />
-      )}
-      {screen.name === 'setlists' && (
-        <Setlists onPlay={(id) => setScreen({ name: 'player', id })} />
-      )}
+      {screen.name === 'library' && <Library onOpen={(id) => setScreen({ name: 'song', id })} />}
+      {screen.name === 'setlists' && <Setlists onPlay={(id) => setScreen({ name: 'player', id })} />}
+      {screen.name === 'account' && <Login />}
     </main>
   )
 }
