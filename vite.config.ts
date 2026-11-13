@@ -11,14 +11,17 @@ export default defineConfig({
       manifest: {
         name: 'Cifras',
         short_name: 'Cifras',
+        lang: 'pt-BR',
         display: 'standalone',
         background_color: '#111111',
         theme_color: '#111111',
         icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,webmanifest}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'] },
     }),
   ],
   test: {
