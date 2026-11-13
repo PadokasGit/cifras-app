@@ -13,3 +13,7 @@ button.ghost, button.item { background:transparent; color:var(--fg); border-colo
 .item small, .muted { color:var(--muted); }
 .dialog { display:grid; gap:8px; }
 textarea { width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; }
+.stage header { flex-wrap:wrap; }
+.cifra { font-family:ui-monospace,Menlo,Consolas,monospace; white-space:pre; overflow:auto; margin:0 0 80px; line-height:1.35; }
+.controls { position:fixed; left:0; right:0; bottom:0; display:flex; gap:6px; flex-wrap:wrap; justify-content:center; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); background:#0c0c0c; border-top:1px solid var(--line); }
+.controls button { min-width:44px; }
