@@ -18,6 +18,14 @@ npm run preview    # serve dist/ localmente
 2. Abra a música: **Tom −/+**, **♭/♯** (grafia dos acordes), **A−/A+** (letra). Tudo fica salvo por música.
 3. **Repertórios**: crie, adicione músicas, reordene (arrastar ou ↑/↓) e toque.
 
+## Importar pelo Compartilhar do celular (Android)
+
+Com o app instalado na tela inicial: abra a cifra no navegador, **selecione o texto da cifra**, toque em
+**Compartilhar** e escolha "Cifras". O texto chega na tela de importar, já preenchido; é só salvar.
+Se você compartilhar só o link da página, o app avisa e explica, porque o Cifra Club não deixa o app
+buscar a cifra sozinho (bloqueia acesso automático). No iPhone o navegador não oferece esse menu:
+use colar texto.
+
 ## Publicar (ainda manual)
 
 Publique a pasta `dist` em um host estático (Cloudflare Pages ou Netlify).

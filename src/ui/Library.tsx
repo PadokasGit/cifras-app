@@ -3,10 +3,19 @@ import { listSongs } from '../lib/db'
 import type { Song } from '../lib/types'
 import ImportDialog from './ImportDialog'
 
-export default function Library({ onOpen }: { onOpen: (id: string) => void }) {
+export default function Library({
+  onOpen,
+  initialImportText,
+  notice,
+}: {
+  onOpen: (id: string) => void
+  initialImportText?: string
+  notice?: string
+}) {
   const [songs, setSongs] = useState<Song[] | null>(null)
   const [query, setQuery] = useState('')
-  const [importing, setImporting] = useState(false)
+  const [importing, setImporting] = useState(initialImportText !== undefined)
+  const [showNotice, setShowNotice] = useState(!!notice)
 
   const reload = useCallback(async () => setSongs(await listSongs()), [])
   useEffect(() => {
@@ -24,6 +33,7 @@ export default function Library({ onOpen }: { onOpen: (id: string) => void }) {
   if (importing) {
     return (
       <ImportDialog
+        initialText={initialImportText}
         onCancel={() => setImporting(false)}
         onSaved={async () => {
           setImporting(false)
@@ -35,6 +45,14 @@ export default function Library({ onOpen }: { onOpen: (id: string) => void }) {
 
   return (
     <section>
+      {showNotice && (
+        <p className="notice" role="status">
+          {notice}{' '}
+          <button className="ghost" onClick={() => setShowNotice(false)}>
+            Entendi
+          </button>
+        </p>
+      )}
       <div className="row">
         <input
           placeholder="Buscar"

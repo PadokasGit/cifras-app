@@ -5,6 +5,10 @@ import Setlists from './ui/Setlists'
 import SetlistPlayer from './ui/SetlistPlayer'
 import Login from './ui/Login'
 import { syncNow } from './lib/sync'
+import { parseShare } from './lib/share'
+
+const LINK_NOTICE =
+  'Você compartilhou só um link. O Cifra Club não deixa o app buscar a cifra sozinho: abra a cifra, selecione o texto, toque em Compartilhar e escolha este app. Ou cole o texto em Importar.'
 
 type Screen =
   | { name: 'library' }
@@ -15,6 +19,12 @@ type Screen =
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'library' })
+  // o que veio do menu Compartilhar do celular (lido uma vez, na abertura)
+  const [incoming] = useState(() => {
+    const info = parseShare(window.location.search)
+    if (info.kind !== 'none') window.history.replaceState({}, '', window.location.pathname)
+    return info
+  })
 
   // sincroniza ao abrir e ao voltar o foco; sem login/internet não faz nada
   useEffect(() => {
@@ -55,7 +65,13 @@ export default function App() {
         {tab('setlists', 'Repertórios')}
         {tab('account', 'Conta')}
       </nav>
-      {screen.name === 'library' && <Library onOpen={(id) => setScreen({ name: 'song', id })} />}
+      {screen.name === 'library' && (
+        <Library
+          onOpen={(id) => setScreen({ name: 'song', id })}
+          initialImportText={incoming.kind === 'text' ? incoming.text : undefined}
+          notice={incoming.kind === 'link' ? LINK_NOTICE : undefined}
+        />
+      )}
       {screen.name === 'setlists' && <Setlists onPlay={(id) => setScreen({ name: 'player', id })} />}
       {screen.name === 'account' && <Login />}
     </main>

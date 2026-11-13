@@ -5,11 +5,13 @@ import { parsePastedText } from '../lib/importText'
 export default function ImportDialog({
   onSaved,
   onCancel,
+  initialText = '',
 }: {
   onSaved: (id: string) => void
   onCancel: () => void
+  initialText?: string
 }) {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(initialText)
 
   async function save() {
     const parsed = parsePastedText(text)

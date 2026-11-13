@@ -12,6 +12,12 @@ export default defineConfig({
         name: 'Cifras',
         short_name: 'Cifras',
         lang: 'pt-BR',
+        // aparece no menu "Compartilhar" do Android quando o app está instalado
+        share_target: {
+          action: '/',
+          method: 'GET',
+          params: { title: 'title', text: 'text', url: 'url' },
+        },
         display: 'standalone',
         background_color: '#111111',
         theme_color: '#111111',

@@ -21,3 +21,4 @@ textarea { width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; }
 .handle { touch-action: none; }
 select { font: inherit; color: inherit; background: #1c1c1c; border: 1px solid var(--line); border-radius: 8px; padding: 10px; min-height: 44px; flex: 1; }
 button:disabled { opacity: .4; cursor: default; }
+.notice { background:#2a2410; border:1px solid var(--accent); border-radius:8px; padding:10px 12px; margin:0 0 12px; }
