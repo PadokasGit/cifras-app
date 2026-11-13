@@ -3,18 +3,24 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// em produção no GitHub Pages o app fica em /cifras-app/; localmente, na raiz
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      base,
+      scope: base,
       manifest: {
         name: 'Cifras',
         short_name: 'Cifras',
         lang: 'pt-BR',
         // aparece no menu "Compartilhar" do Android quando o app está instalado
         share_target: {
-          action: '/',
+          action: base,
           method: 'GET',
           params: { title: 'title', text: 'text', url: 'url' },
         },
